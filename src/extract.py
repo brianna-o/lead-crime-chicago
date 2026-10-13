@@ -7,15 +7,15 @@ BASE_URL = "https://data.cityofchicago.org/resource"
 RAW_DIR = Path(__file__).resolve().parents[1] / "data" / "raw"
 PAGE_SIZE = 50_000
 
+# Send one API request and return the rows as a list of dictionaries. 
 def get_page(dataset_id, params):
-    """Request one page of results from a Chicago Data Portal dataset."""
     url = f"{BASE_URL}/{dataset_id}.json"
     response = requests.get(url, params=params, timeout=300)
     response.raise_for_status()
     return response.json()
 
+# Calls get_page function repeatedly until every row is collected, returns a DataFrame.
 def fetch_all(dataset_id, params):
-    """Download every row of a dataset, one page at a time."""
     all_rows = []
     offset = 0
 
@@ -33,15 +33,15 @@ def fetch_all(dataset_id, params):
 
     return pd.DataFrame(all_rows)
 
+# Writes a DatFrame to a CSV in data/raw. 
 def save(df, name):
-    """Save a DataFrame as a CSV in data/raw/."""
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     path = RAW_DIR / f"{name}.csv"
     df.to_csv(path, index=False)
     print(f"Saved {len(df):,} rows x {df.shape[1]} columns to {path.name}\n")
 
+# Builds a query that counts crimes by year, community area, and crime type on the server, then passes to fetch_all.
 def extract_crimes():
-    """Count crimes by year, community area, and crime type on the server."""
     params = {
         "$select": "year, community_area, fbi_code, primary_type, count(*) AS incidents",
         "$where": "year BETWEEN 2001 AND 2025 AND community_area IS NOT NULL",
@@ -50,6 +50,23 @@ def extract_crimes():
     }
     return fetch_all("ijzp-q8t2", params)
 
+# Builds a query to obtain total population per community area, used to calculate crime rates.
+def extract_population():
+    params = {
+        "$select": "community_area, acs_year, total_population",
+        "$order": "community_area",
+    }
+    return fetch_all("t68z-cikk", params)
+
+# Builds a query to obtain community areas and names to match population names to numbers.
+def extract_area_lookup():
+    params = {
+        "$select": "area_numbe, community",
+        "$order": "area_numbe",
+    }
+    return fetch_all("igwz-8jzy", params)
+
+# Runs each extraction and saves the results. 
 if __name__ == "__main__":
     lead = fetch_all("v2z5-jyrq", {"$order": "community_area_number"})
     save(lead, "blood_lead")
@@ -59,3 +76,9 @@ if __name__ == "__main__":
 
     crimes = extract_crimes()
     save(crimes, "crimes_by_area_year")
+
+    population = extract_population()
+    save(population, "population")
+
+    lookup = extract_area_lookup()
+    save(lookup, "community_area_lookup")
