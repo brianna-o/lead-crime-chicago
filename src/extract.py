@@ -10,7 +10,7 @@ PAGE_SIZE = 50_000
 def get_page(dataset_id, params):
     """Request one page of results from a Chicago Data Portal dataset."""
     url = f"{BASE_URL}/{dataset_id}.json"
-    response = requests.get(url, params=params, timeout=120)
+    response = requests.get(url, params=params, timeout=300)
     response.raise_for_status()
     return response.json()
 
@@ -40,9 +40,22 @@ def save(df, name):
     df.to_csv(path, index=False)
     print(f"Saved {len(df):,} rows x {df.shape[1]} columns to {path.name}\n")
 
+def extract_crimes():
+    """Count crimes by year, community area, and crime type on the server."""
+    params = {
+        "$select": "year, community_area, fbi_code, primary_type, count(*) AS incidents",
+        "$where": "year BETWEEN 2001 AND 2025 AND community_area IS NOT NULL",
+        "$group": "year, community_area, fbi_code, primary_type",
+        "$order": "year, community_area, fbi_code, primary_type",
+    }
+    return fetch_all("ijzp-q8t2", params)
+
 if __name__ == "__main__":
     lead = fetch_all("v2z5-jyrq", {"$order": "community_area_number"})
     save(lead, "blood_lead")
 
     socio = fetch_all("kn9c-c2s2", {"$order": "ca"})
     save(socio, "socioeconomic")
+
+    crimes = extract_crimes()
+    save(crimes, "crimes_by_area_year")
