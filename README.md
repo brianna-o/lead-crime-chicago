@@ -1,6 +1,6 @@
 ## Childhood Lead Exposure and Violent Crime in Chicago
 
-Do Chicago neighborhoods with higher childhood lead exposure around 2000 have higher violent crime about 20 years later, once you account for poverty?
+Do Chicago neighborhoods with higher childhood lead exposure have higher violent crime rates?
 
 ## Questions
 
