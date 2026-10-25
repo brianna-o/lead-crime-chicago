@@ -38,6 +38,16 @@ Chicago has 77 community areas, numbered 1-77. The lead data has two extra rows.
 
 Riverdale (#54) shows zero kids screened in 2003 and 2005. Riverdale is a real neighborhood with families, so this is almost certainly missing data, not a true zero. Left as 0, it would distort Riverdale's lead average.
 
+**Cleaning the socioeconomic data**
+The socioeconomic data has a citywide "CHICAGO" row with no community area number or hardship index. Dropped it, then converted `ca` from decimal to integer to match the other datasets (pandas stores the column as decimals when any value is missing). Renamed `per_capita_income_` to remove the trailing underscore left over from the original column name.
+
+**Cleaning the population data**
+Converted `total_population` from decimal to integer, since it's a count of people. Every row has `acs_year` 2023, meaning the 2019-2023 five-year estimate, which lines up with the crime window.
+
+**Matching population names to the lookup table**
+Checked population names against the lookup table in both directions. All 77 match exactly, so the join needs no name fixes.
+
+
 ## Analysis
 
 **Defining violent crime**
@@ -47,3 +57,8 @@ Used the FBI's index crime codes: 01A (murder), 02 (criminal sexual assault), 03
 **Focusing on violent crime**
 
 The lead hypothesis centers on aggression and impulsivity, so violent crime is what it predicts lead should affect. Property crime may be added later as a comparison. 
+
+# Limitations
+
+**Timing of the socioeconomic data**
+The hardship index is from 2008-2012, between the lead period (1999-2003) and the crime period (2019-2023). It's a reasonable snapshot of conditions while those kids were growing up, but neighborhoods may have changed before and after.
