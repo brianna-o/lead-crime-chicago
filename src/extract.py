@@ -33,7 +33,7 @@ def fetch_all(dataset_id, params):
 
     return pd.DataFrame(all_rows)
 
-# Writes a DatFrame to a CSV in data/raw. 
+# Writes a DataFrame to a CSV in data/raw. 
 def save(df, name):
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     path = RAW_DIR / f"{name}.csv"
