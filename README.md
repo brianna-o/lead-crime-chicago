@@ -20,6 +20,8 @@ All data from the [Chicago Data Portal](https://data.cityofchicago.org), listed 
 | ACS 5-year data by community area | `t68z-cikk` | 2019-2023 | Population, for crime rates |
 | Community area boundaries | `igwz-8jzy` | n/a | Matching neighborhood names to numbers |
 
+Crime data before 2003 is excluded because community area was missing for about 99% of 2001 crimes and 27% of 2002 crimes.
+
 Violent crime uses the FBI's index crime codes: murder, criminal sexual assault, robbery, aggravated assault, and aggravated battery.
 
 ## Project structure
@@ -34,6 +36,7 @@ lead-crime-chicago/
 ├── sql/
 ├── src/
 │   └── extract.py      # pulls all five datasets from the API
+│   └── transform.py    # cleans and standardizes the raw data
 ├── NOTES.md            # decisions made along the way, and why
 ├── README.md
 └── requirements.txt
@@ -46,9 +49,12 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python src/extract.py
+python src/transform.py
 ```
 
 `extract.py` saves the raw data to `data/raw/`. The crime data is counted by year, neighborhood, and crime type on the API's server, so it downloads about 64,000 summary rows instead of 8 million individual records.
+
+`transform.py` cleans each dataset and saves the results to `data/processed/`.
 
 
 ## Limitations
@@ -59,6 +65,7 @@ python src/extract.py
 - **Changing definition of "elevated."** This data uses 10 µg/dL. The CDC reference value is now 3.5 µg/dL.
 - **Reported crime.** Police data reflects crimes that were reported and recorded, which depends partly on where police patrol.
 - **Timing of the hardship index.** It covers 2008-2012, between the lead and crime periods. Neighborhoods may have changed before and after.
+- **Crime data starts in 2003.** Community area wasn't recorded reliably before then, so earlier crime can't be assigned to neighborhoods.
 
 ## Findings
 
