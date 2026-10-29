@@ -4,9 +4,9 @@ Do Chicago neighborhoods with higher childhood lead exposure have higher violent
 
 ## Questions
 
-1. Do community areas with higher rates of elevated levels of lead in kids (1999-2003) have higher violent crime rates in 2019-2023, when those kids are young adults?
+1. Do community areas with higher rates of elevated levels of lead in kids have higher violent crime rates years later, when those kids are young adults?
 2. Does that relationship hold with neighborhoods of similar hardship levels?
-3. How does the 20-year lagged relationship compare to a same year baseline?
+3. How does the multiple year lagged relationship compare to a same year baseline?
 
 ## Data
 
