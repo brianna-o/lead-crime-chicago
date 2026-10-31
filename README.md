@@ -24,6 +24,17 @@ Crime data before 2003 is excluded because community area was missing for about 
 
 Violent crime uses the FBI's index crime codes: murder, criminal sexual assault, robbery, aggravated assault, and aggravated battery.
 
+### Cleaned data
+
+| File | Rows | One row per |
+|---|---|---|
+| `blood_lead.csv` | 1,155 | neighborhood per year (1999-2013) |
+| `crimes_by_area_year.csv` | 1,771 | neighborhood per year (2003-2025) |
+| `socioeconomic.csv` | 77 | neighborhood |
+| `population.csv` | 77 | neighborhood |
+
+All four use `community_area_number` as the shared key.
+
 ## Project structure
 
 ```
@@ -32,7 +43,8 @@ lead-crime-chicago/
 │   ├── raw/            # API pulls, untouched (not tracked in git)
 │   └── processed/      # cleaned data (not tracked in git)
 ├── notebooks/
-│   └── 01_explore.ipynb
+│   ├── 01_explore.ipynb        # data quality checks on all five datasets
+│   └── 02_lead_reshape.ipynb   # prototype of the lead reshape
 ├── sql/
 ├── src/
 │   └── extract.py      # pulls all five datasets from the API
@@ -66,6 +78,7 @@ python src/transform.py
 - **Reported crime.** Police data reflects crimes that were reported and recorded, which depends partly on where police patrol.
 - **Timing of the hardship index.** It covers 2008-2012, between the lead and crime periods. Neighborhoods may have changed before and after.
 - **Crime data starts in 2003.** Community area wasn't recorded reliably before then, so earlier crime can't be assigned to neighborhoods.
+- **Riverdale has no lead data after 2002.** Its 1999-2003 average uses four years, and it's left out of the same-year baseline, which covers 76 neighborhoods.
 
 ## Findings
 

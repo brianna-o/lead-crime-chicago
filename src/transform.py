@@ -55,7 +55,31 @@ def clean_crimes():
     assert len(crimes) == 1771, f"Expected 1771 rows (77 areas x 23 years), got {len(crimes)}"
     return crimes
 
-
+# Clean blood_lead.csv:
+# - Keep areas 1-77 (drops the citywide total #0 and Unknown #99).
+# - Keep only kids screened and percent elevated, the two measures the analysis needs.
+# - Reshape from one row per neighborhood (one column per year) to one row per neighborhood per year.
+# - Convert zero screenings to missing (Riverdale has none recorded 2003-2013).
+# - Use Int64 for kids_screened so it can hold whole numbers and missing values.
+def clean_lead():
+    lead = pd.read_csv(RAW_DIR / "blood_lead.csv")
+    lead = lead[lead["community_area_number"].between(1, 77)]
+    screened_cols = [f"screened_for_lead_in_{year}" for year in range(1999, 2014)]
+    elevated_cols = [f"percent_elevated_{year}" for year in range(1999, 2014)]
+    keep_cols = ["community_area_number"] + screened_cols + elevated_cols
+    lead = lead[keep_cols]
+    long = lead.melt(id_vars=["community_area_number"], var_name="column", value_name="value")
+    long["year"] = long["column"].str[-4:].astype(int)
+    long["measure"] = long["column"].str[:-5]
+    lead_long = long.pivot(index=["community_area_number", "year"], columns="measure", values="value").reset_index()
+    lead_long = lead_long.rename(columns={"screened_for_lead_in":"kids_screened"})
+    lead_long.columns.name = None
+    zero_screened = lead_long["kids_screened"] == 0
+    lead_long.loc[zero_screened, ["kids_screened", "percent_elevated"]] = pd.NA
+    lead_long["kids_screened"] = lead_long["kids_screened"].astype("Int64")
+    assert lead_long["community_area_number"].nunique() == 77, f"Expected 77 areas, got {lead_long['community_area_number'].nunique()}"
+    assert len(lead_long) == 1155, f"Expected 1155 rows (77 areas x 15 years), got {len(lead_long)}"
+    return lead_long
 
 # Clean each dataset and save to data/processed. 
 if __name__ == "__main__":
@@ -69,7 +93,11 @@ if __name__ == "__main__":
 
     crimes = clean_crimes()
     crimes.to_csv(PROCESSED_DIR / "crimes_by_area_year.csv", index=False)
-    
+
+    lead = clean_lead()
+    lead.to_csv(PROCESSED_DIR / "blood_lead.csv", index=False)
+
     print(f"Saved socioeconomic: {socio.shape}")
     print(f"Saved population: {pop.shape}")
     print(f"Saved crimes_by_area_year: {crimes.shape}")
+    print(f"Saved blood_lead: {lead.shape}")

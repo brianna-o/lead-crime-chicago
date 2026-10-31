@@ -39,7 +39,7 @@ Chicago has 77 community areas, numbered 1-77. The lead data has two extra rows.
 
 **Treating zero screenings as missing data**
 
-Riverdale (#54) shows zero kids screened in 2003 and 2005. Riverdale is a real neighborhood with families, so this is almost certainly missing data, not a true zero. Left as 0, it would distort Riverdale's lead average.
+Riverdale (#54) has zero screenings recorded for every year from 2003-2013, so its lead data only exists for 1999-2002. Converted these zeros to missing. Its 1999-2003 average uses four years. It has no lead data in 2003-2007, so it’s excluded from the same-year baseline, which covers 76 neighborhoods.
 
 **Cleaning the socioeconomic data**
 The socioeconomic data has a citywide "CHICAGO" row with no community area number or hardship index. Dropped it, then converted `ca` from decimal to integer to match the other datasets (pandas stores the column as decimals when any value is missing). Renamed `per_capita_income_` to remove the trailing underscore left over from the original column name.
@@ -62,6 +62,17 @@ Didn't filter to 2019-2023 during cleaning. Choosing a time window is an analysi
 **Checking each output**
 Each cleaning function checks its result before returning it: 77 rows for socioeconomic and population, and 77 neighborhoods and 1,771 rows for crime. If the source data ever changes and breaks an assumption, the script stops with a message instead of saving bad data.
 
+**Reshaping the lead data**
+Kept only `screened_for_lead_in` and `percent_elevated` for each year, since the screening rates and confidence intervals aren't used in the analysis. Reshaped from one row per neighborhood with 30 year columns to one row per neighborhood per year (77 x 15 = 1,155 rows), matching the crime data's grain. Built the column names with code instead of filtering by prefix, because the confidence interval columns share the same prefix.
+
+**Riverdale has no lead data after 2002**
+Riverdale (#54) has zero screenings recorded for every year from 2003-2013. Converted these zeros to missing in both measures. Its 1999-2003 average uses four years (1999-2002). It has no lead data in 2003-2007, so it's excluded from the same-year baseline, which covers 76 neighborhoods.
+
+**Data types after reshaping**
+The year pulled from column names came out as text, so converted it to integer to match the crime data. Otherwise joins on year would fail. Used `Int64` (capital I) for kids screened, which allows whole numbers and missing values.
+
+**Keeping all lead years in the cleaned file**
+Didn't average 1999-2003 during cleaning. Like crime, the time window is an analysis decision, and the same-year baseline needs 2003-2007.
 
 ## Analysis
 
